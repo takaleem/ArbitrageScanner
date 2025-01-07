@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbitrage Opportunities</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #eee;
+        }
+        .loading {
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Arbitrage Opportunities</h1>
+    <div id="loading" class="loading">Loading data...</div>
+    <table id="opportunities-table" style="display: none;">
+        <thead>
+            <tr>
+                <th>Token</th>
+                <th>Name</th>
+                <th>Binance Price</th>
+                <th>DEX Price</th>
+                <th>Price Difference</th>
+                <th>Profitability</th>
+                <th>Recommendation</th>
+            </tr>
+        </thead>
+        <tbody id="opportunities-body"></tbody>
+    </table>
+
+    <script>
+        async function fetchOpportunities() {
+            const loading = document.getElementById('loading');
+            const table = document.getElementById('opportunities-table');
+            const tbody = document.getElementById('opportunities-body');
+
+            try {
+                const response = await fetch('http://localhost:4618/api/arbitrage-opportunities');
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    loading.textContent = 'No arbitrage opportunities found.';
+                    return;
+                }
+
+                loading.style.display = 'none';
+                table.style.display = 'table';
+
+                data.forEach(opportunity => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${opportunity.token}</td>
+                        <td>${opportunity.name}</td>
+                        <td>${opportunity.binancePrice.toFixed(6)}</td>
+                        <td>${opportunity.dexPrice.toFixed(6)}</td>
+                        <td>${opportunity.priceDifference}</td>
+                        <td>
+                            Binance to DEX: ${opportunity.profitability.binanceToDex} USDC<br>
+                            DEX to Binance: ${opportunity.profitability.dexToBinance} USDC
+                        </td>
+                        <td>${opportunity.recommendation}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                loading.textContent = 'Error fetching data. Please try again later.';
+                console.error('Error fetching opportunities:', error);
+            }
+        }
+
+        fetchOpportunities();
+    </script>
+</body>
+</html>
